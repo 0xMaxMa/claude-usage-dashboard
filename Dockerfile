@@ -10,6 +10,6 @@ RUN npm ci --omit=dev
 
 COPY . .
 
-EXPOSE 13737
+EXPOSE 3737
 
 CMD ["node", "server.mjs"]

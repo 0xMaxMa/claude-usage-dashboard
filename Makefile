@@ -1,7 +1,7 @@
 include .env
 export
 
-.PHONY: build up down logs deploy help
+.PHONY: build up down logs deploy forward-port help
 
 help: ## Show this help message
 	@echo "----------------------------------------"
@@ -24,6 +24,9 @@ down: ## Stop application stack
 
 logs: ## Show application logs
 	docker compose logs -f claude-usage-dashboard
+
+forward-port: ## Forward local port to the public internet using Cloudflare Tunnel
+	cloudflared tunnel --protocol http2 --url http://localhost:${PORT:-3737}
 
 deploy: ## Deploy application to production server
 	./run-app.sh push 0xparadin/claude-usage-dashboard:latest amd64
