@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html class="dark" lang="en" data-theme="default">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Claude Code Usage</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "on-primary-fixed": "#341100",
+          "on-primary-fixed-variant": "#783200",
+          "inverse-surface": "#e5e2e1",
+          "on-surface": "#e5e2e1",
+          "on-primary-container": "#582200",
+          "surface-dim": "#131313",
+          "surface-container-highest": "#353534",
+          "surface-container-high": "#2a2a2a",
+          "inverse-on-surface": "#313030",
+          "outline": "#a78b7d",
+          "secondary": "#cebdff",
+          "on-secondary-container": "#bea8ff",
+          "on-error-container": "#ffdad6",
+          "on-tertiary": "#003920",
+          "on-surface-variant": "#e0c0b1",
+          "error-container": "#93000a",
+          "surface-container": "#201f1f",
+          "primary-container": "#f97316",
+          "tertiary-fixed": "#6bfdaf",
+          "tertiary-container": "#00b16d",
+          "primary-fixed-dim": "#ffb690",
+          "on-primary": "#552100",
+          "tertiary": "#49e095",
+          "surface-container-lowest": "#0e0e0e",
+          "on-secondary": "#381385",
+          "on-background": "#e5e2e1",
+          "surface": "#131313",
+          "error": "#ffb4ab",
+          "on-tertiary-fixed": "#002110",
+          "secondary-fixed-dim": "#cebdff",
+          "on-error": "#690005",
+          "on-secondary-fixed": "#21005e",
+          "surface-variant": "#353534",
+          "surface-bright": "#3a3939",
+          "secondary-fixed": "#e8ddff",
+          "inverse-primary": "#9d4300",
+          "surface-tint": "#ffb690",
+          "on-tertiary-fixed-variant": "#005230",
+          "tertiary-fixed-dim": "#49e095",
+          "background": "#0f0f0f",
+          "on-secondary-fixed-variant": "#4f319c",
+          "secondary-container": "#4f319c",
+          "primary": "#f97316",
+          "on-tertiary-container": "#003b21",
+          "surface-container-low": "#1c1b1b",
+          "primary-fixed": "#ffdbca",
+          "outline-variant": "#584237"
+        },
+        fontFamily: {
+          "headline": ["Inter"],
+          "body": ["Inter"],
+          "label": ["Inter"]
+        },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background-color: #0f0f0f; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .glass-panel { backdrop-filter: blur(20px); background: rgba(32, 31, 31, 0.6); }
+  .bar-green { background-color: #49e095; }
+  .bar-yellow { background-color: #facc15; }
+  .bar-red { background-color: #ef4444; }
+  .bar-orange { background-color: #ec4899; }
+  .bar-purple { background-color: #cebdff; }
+  .text-green { color: #49e095; }
+  .text-yellow { color: #facc15; }
+  .text-red { color: #ef4444; }
+  .pulse-dot { animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .badge-time {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(236, 72, 153, 0.15);
+    color: #ec4899;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+
+  :root { --border: #353534; --surface: #201f1f; }
+  .status-banner {
+    display: flex; align-items: center; gap: 16px;
+    padding: 10px 16px; border-radius: 10px; margin-bottom: 16px;
+    border: 1px solid var(--border); background: var(--surface); flex-wrap: wrap;
+  }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .status-dot.operational { background: #3dd68c; box-shadow: 0 0 6px #3dd68c88; }
+  .status-dot.minor       { background: #f5a623; box-shadow: 0 0 6px #f5a62388; }
+  .status-dot.major       { background: #ff6b6b; box-shadow: 0 0 6px #ff6b6b88; }
+  .status-dot.critical    { background: #ff2020; box-shadow: 0 0 6px #ff202088; animation: pulse 1s infinite; }
+  .status-left { display: flex; align-items: center; font-weight: 600; font-size: 14px; }
+  .status-components { display: flex; gap: 8px; flex-wrap: wrap; }
+  .comp-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 500;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  }
+  .comp-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .comp-dot.operational { background: #3dd68c; }
+  .comp-dot.degraded, .comp-dot.degraded_performance { background: #f5a623; }
+  .comp-dot.partial_outage { background: #ff6b6b; }
+  .comp-dot.major_outage, .comp-dot.critical { background: #ff2020; }
+  .comp-dot.under_maintenance { background: #888; }
+  .status-incident {
+    font-size: 12px; color: #ff6b6b;
+    padding: 2px 8px; border-radius: 4px;
+    background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3);
+  }
+  /* History tooltip */
+  .history-tooltip {
+    position: fixed;
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #e8e8e8;
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    min-width: 160px;
+  }
+  .history-tooltip .tt-time { color: #888; font-size: 11px; margin-bottom: 4px; }
+  .history-tooltip .tt-row { display: flex; justify-content: space-between; gap: 12px; padding: 1px 0; }
+  .history-tooltip .tt-label { color: #888; }
+  .history-tooltip .tt-val { font-weight: 600; }
+  .history-tooltip .tt-val.green { color: #49e095; }
+  .history-tooltip .tt-val.purple { color: #cebdff; }
+  .history-tooltip .tt-val.yellow { color: #facc15; }
+  .history-bar-wrap { position: relative; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; cursor: crosshair; }
+</style>
+<style id="retro-theme">
+/* RETRO PIXEL THEME — only activates with data-theme="retro" */
+
+[data-theme="retro"] body {
+  background-color: #2a1500 !important;
+  background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(139,94,20,0.3) 10px, rgba(139,94,20,0.3) 11px),
+    repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(139,94,20,0.3) 10px, rgba(139,94,20,0.3) 11px) !important;
+}
+
+/* Cards — target actual Tailwind classes */
+[data-theme="retro"] .bg-surface-container,
+[data-theme="retro"] .bg-surface-container-low,
+[data-theme="retro"] .bg-surface-container-high {
+  background-color: #f5e6c8 !important;
+  border-color: #2a1500 !important;
+  border-width: 3px !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 #2a1500 !important;
+}
+
+/* Progress track */
+[data-theme="retro"] .bg-surface-container-highest {
+  background-color: #d4b896 !important;
+  border-radius: 0 !important;
+}
+
+/* Text */
+[data-theme="retro"] .text-on-surface { color: #1a0e00 !important; }
+[data-theme="retro"] .text-on-surface-variant { color: #6b4c1e !important; }
+
+/* Header text stays light */
+[data-theme="retro"] h1.text-on-surface { color: #f5e6c8 !important; }
+[data-theme="retro"] header .text-on-surface-variant { color: #c4a882 !important; }
+
+/* Remove rounded corners */
+[data-theme="retro"] .rounded-full,
+[data-theme="retro"] .rounded-xl,
+[data-theme="retro"] .rounded-lg { border-radius: 0 !important; }
+
+/* Status banner */
+[data-theme="retro"] .status-banner {
+  background: #f5e6c8 !important;
+  border: 3px solid #2a1500 !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 #2a1500 !important;
+}
+[data-theme="retro"] .comp-pill {
+  background: #e8d4a0 !important;
+  border: 2px solid #2a1500 !important;
+  border-radius: 0 !important;
+  color: #1a0e00 !important;
+}
+[data-theme="retro"] .status-left { color: #1a0e00 !important; }
+[data-theme="retro"] .status-description { color: #2a1500 !important; }
+
+/* Badge time */
+[data-theme="retro"] .badge-time {
+  background: #2a1500 !important;
+  color: #f5e6c8 !important;
+  border-radius: 0 !important;
+  font-weight: 900 !important;
+}
+
+/* Burn rate */
+[data-theme="retro"] .burn-label { color: #6b4c1e !important; }
+[data-theme="retro"] .burn-val   { color: #e85d04 !important; }
+[data-theme="retro"] .pred-label { color: #6b4c1e !important; }
+[data-theme="retro"] .pred-val.safe { color: #2d8a4e !important; }
+[data-theme="retro"] .pred-val.warn { color: #b8860b !important; }
+
+/* History tooltip */
+[data-theme="retro"] .history-tooltip {
+  background: #f5e6c8 !important;
+  border: 3px solid #2a1500 !important;
+  border-radius: 0 !important;
+  color: #1a0e00 !important;
+  box-shadow: 4px 4px 0 #2a1500 !important;
+}
+[data-theme="retro"] .tt-time   { color: #6b4c1e !important; }
+[data-theme="retro"] .tt-val.green  { color: #2d8a4e !important; }
+[data-theme="retro"] .tt-val.yellow { color: #b8860b !important; }
+[data-theme="retro"] .tt-val.purple { color: #6b21a8 !important; }
+
+/* Borders */
+[data-theme="retro"] .border-outline-variant { border-color: #2a1500 !important; }
+[data-theme="retro"] .divider { border-color: #c4a882 !important; }
+[data-theme="retro"] .prediction-row { border-color: #d4b896 !important; }
+
+/* Theme toggle button */
+[data-theme="retro"] #theme-toggle {
+  background: #2a1500 !important;
+  border-color: #1a0e00 !important;
+  color: #f5e6c8 !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 #1a0e00 !important;
+}
+</style>
+
+</head>
+<body class="text-on-surface min-h-screen">
+<main class="py-8 px-4 md:px-8 max-w-5xl mx-auto space-y-8">
+
+  <!-- Header -->
+  <header class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-black tracking-tight text-on-surface">Claude Code Usage</h1>
+      <p class="text-xs text-on-surface-variant mt-1">Real-time utilization monitor</p>
+    </div>
+    <div class="flex flex-col md:items-end gap-2">
+      <div class="flex items-center gap-3">
+        <button id="refresh-btn" onclick="manualScrape()" class="flex items-center gap-1 bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg text-xs font-bold tracking-tight transition-all">
+          <span class="material-symbols-outlined text-xs">refresh</span>
+          Refresh now
+        </button>
+        <button id="theme-toggle" onclick="toggleTheme()" style="padding: 4px 12px; border-radius: 6px; border: 1px solid #333; background: #242424; color: #e8e8e8; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">🌙 Default</button>
+      </div>
+      <div class="flex flex-col md:items-end">
+        <span class="text-[10px] text-on-surface-variant font-bold tracking-widest uppercase mb-1">Last Updated</span>
+        <span id="last-updated" class="text-sm font-mono text-primary">—</span>
+      </div>
+      <div>
+        <span class="text-[10px] text-on-surface-variant font-bold tracking-widest uppercase">Next Fetch</span>
+        <span id="next-scrape" class="text-xs font-mono text-on-surface-variant ml-2">—</span>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- Claude Status Banner -->
+  <div id="status-banner" class="status-banner">
+    <div class="status-left"><a href="https://status.claude.com/" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:6px;text-decoration:none;color:inherit;">
+      <span id="status-dot" class="status-dot operational"></span>
+      <span id="status-text">Loading status...</span></a>
+    </div>
+    <div class="status-components"></div>
+    <div class="status-incident" id="status-incident" style="display:none"></div>
+  </div>
+
+  <!-- Loading state -->
+  <div id="loading" class="flex items-center justify-center py-16">
+    <div class="flex items-center gap-3 text-on-surface-variant">
+      <div class="w-2 h-2 rounded-full bg-primary pulse-dot"></div>
+      <span class="text-sm">Loading usage data...</span>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div id="error-state" class="hidden bg-error-container/20 border border-error/20 rounded-xl p-6 text-center">
+    <span class="material-symbols-outlined text-error text-2xl">error</span>
+    <p id="error-msg" class="text-sm text-error mt-2">Failed to load data</p>
+  </div>
+
+  <!-- Main content (hidden until loaded) -->
+  <div id="main-content" class="hidden space-y-8">
+
+    <!-- Main Usage Cards -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Current Session Card (5h window) -->
+      <div class="bg-surface-container p-6 rounded-xl border border-outline-variant/10">
+        <div class="mb-6">
+          <span class="text-[10px] font-bold text-primary tracking-widest uppercase">REAL_TIME</span>
+          <h3 class="text-lg font-bold text-on-surface mt-1">Current Session (5h window)</h3>
+        </div>
+        <div class="space-y-5">
+          <!-- Utilization -->
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs font-mono">
+              <span class="text-on-surface-variant">UTILIZATION</span>
+              <span id="session-pct-text" class="text-on-surface">—</span>
+            </div>
+            <div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+              <div id="session-bar" class="h-full bar-green transition-all duration-700" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8 flex justify-between items-center pt-4 border-t border-outline-variant/10">
+          <span id="session-resets" class="text-[10px] text-on-surface-variant font-medium tracking-tight uppercase">Resets in —</span>
+          <div id="session-badge" class="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] font-bold tracking-tighter uppercase">—% used</div>
+        </div>
+      </div>
+
+      <!-- Weekly All Models Card -->
+      <div class="bg-surface-container p-6 rounded-xl border border-outline-variant/10">
+        <div class="mb-6">
+          <span class="text-[10px] font-bold text-primary tracking-widest uppercase">AGGREGATED</span>
+          <h3 class="text-lg font-bold text-on-surface mt-1">Weekly All Models</h3>
+        </div>
+        <div class="space-y-5">
+          <!-- Utilization -->
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs font-mono">
+              <span class="text-on-surface-variant">UTILIZATION</span>
+              <span id="weekly-pct-text" class="text-on-surface">—</span>
+            </div>
+            <div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+              <div id="weekly-bar" class="h-full bar-orange transition-all duration-700" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8 flex justify-between items-center pt-4 border-t border-outline-variant/10">
+          <span id="weekly-resets" class="text-[10px] text-on-surface-variant font-medium tracking-tight uppercase">Resets —</span>
+          <div id="weekly-badge" class="bg-[#facc15]/10 text-[#facc15] px-2 py-0.5 rounded text-[10px] font-bold tracking-tighter uppercase">—% used</div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Sonnet + Info -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Reset Info Card -->
+      <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10">
+        <div class="flex items-center gap-2 mb-6">
+          <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">schedule</span>
+          <span class="text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">Reset Schedule</span>
+        </div>
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="text-[11px] text-on-surface-variant uppercase">5h Window Reset</span>
+            <span id="session-reset-abs" class="text-sm font-bold font-mono text-primary">—</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-[11px] text-on-surface-variant uppercase">7-Day Reset</span>
+            <span id="weekly-reset-abs" class="text-sm font-bold font-mono text-tertiary">—</span>
+          </div>
+        </div>
+        <div class="h-px bg-outline-variant/10 w-full my-4"></div>
+        <div class="space-y-3">
+          <div class="flex items-start gap-2">
+            <span class="material-symbols-outlined text-tertiary text-xs mt-0.5">check_circle</span>
+            <p id="session-status-text" class="text-[11px] text-on-surface font-medium">Session window status loading...</p>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="material-symbols-outlined text-tertiary text-xs mt-0.5">check_circle</span>
+            <p id="weekly-status-text" class="text-[11px] text-on-surface font-medium">Weekly usage status loading...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Sonnet Only -->
+      <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10">
+        <div class="mb-6">
+          <span class="text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">MODEL_SPECIFIC</span>
+          <h3 class="text-lg font-bold text-on-surface mt-1">Weekly Sonnet Only</h3>
+        </div>
+        <div class="flex flex-col justify-center space-y-4">
+          <div class="relative w-full">
+            <div class="flex justify-between items-end mb-2">
+              <span class="text-[10px] font-bold text-secondary uppercase">Sonnet Usage</span>
+              <span id="sonnet-pct-text" class="text-xs font-mono text-on-surface">—% utilized</span>
+            </div>
+            <div class="h-6 w-full bg-surface-container-highest rounded-lg overflow-hidden border border-outline-variant/10">
+              <div id="sonnet-bar" class="h-full bg-secondary shadow-[0_0_15px_rgba(206,189,255,0.2)] transition-all duration-700" style="width: 0%"></div>
+            </div>
+          </div>
+          <div id="sonnet-badge-row" class="flex justify-between items-center">
+            <p class="text-[10px] text-on-surface-variant leading-relaxed">Sonnet 3.5/3.7 weekly utilization</p>
+            <div id="sonnet-badge" class="bg-secondary/10 text-secondary px-2 py-0.5 rounded text-[10px] font-bold tracking-tighter uppercase">—% used</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- History Chart placeholder -->
+    <section class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10">
+      <div class="flex items-center justify-between mb-4">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <span class="text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">Usage History (24h)</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#49e095;"><span style="width:8px;height:8px;border-radius:2px;background:#49e095;display:inline-block;"></span>Session (5h)</span>
+          <span style="font-size:10px;color:#444;">hover for details</span>
+        </div>
+        <span class="text-[10px] text-on-surface-variant">Auto-updates every 30s</span>
+      </div>
+      <div id="history-bars" class="flex items-end gap-1 h-16">
+        <!-- Bars injected by JS -->
+      </div>
+      <div class="flex justify-between mt-2">
+        <span class="text-[9px] text-on-surface-variant">24h ago</span>
+        <span class="text-[9px] text-on-surface-variant">Now</span>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+let refreshTimer = null;
+
+function getColor(pct) {
+  if (pct < 60) return 'green';
+  if (pct < 80) return 'yellow';
+  return 'red';
+}
+
+function getBarClass(pct) {
+  if (pct < 60) return 'bar-green';
+  if (pct < 80) return 'bar-yellow';
+  return 'bar-red';
+}
+
+function getTextClass(pct) {
+  if (pct < 60) return 'text-green';
+  if (pct < 80) return 'text-yellow';
+  return 'text-red';
+}
+
+function formatCountdown(isoStr) {
+  if (!isoStr) return '—';
+  const diff = new Date(isoStr) - new Date();
+  if (diff <= 0) return 'now';
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  if (h > 24) {
+    const days = Math.floor(h / 24);
+    const hrs = h % 24;
+    return `in ${days}d ${hrs}h`;
+  }
+  if (h > 0) return `in ${h}h ${m}m`;
+  return `in ${m}m`;
+}
+
+function formatAbsTime(isoStr) {
+  if (!isoStr) return '—';
+  return new Date(isoStr).toLocaleString('en-GB', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12: false });
+}
+
+function formatNextScrape(isoStr) {
+  if (!isoStr) return '—';
+  const diff = new Date(isoStr) - new Date();
+  if (diff <= 0) return 'soon';
+  const m = Math.floor(diff / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  return `${m}m ${s}s`;
+}
+
+function updateBar(barId, textId, pct, suffix='%') {
+  const bar = document.getElementById(barId);
+  const text = document.getElementById(textId);
+  const clampedPct = Math.min(Math.max(pct || 0, 0), 100);
+  bar.style.width = clampedPct + '%';
+  // Reset classes
+  bar.className = 'h-full transition-all duration-700 ' + getBarClass(clampedPct);
+  text.textContent = (pct !== null && pct !== undefined) ? `${pct.toFixed(1)}% utilized` : '—';
+  text.className = 'text-xs font-mono ' + getTextClass(clampedPct);
+}
+
+function updateBadge(badgeId, pct, bgColor) {
+  const badge = document.getElementById(badgeId);
+  const clampedPct = Math.min(Math.max(pct || 0, 0), 100);
+  badge.textContent = `${clampedPct.toFixed(1)}% used`;
+}
+
+function renderHistory(rows) {
+  const container = document.getElementById('history-bars');
+  if (!rows || rows.length === 0) {
+    container.innerHTML = '<span class="text-[10px] text-on-surface-variant">No history yet</span>';
+    return;
+  }
+  const tooltip = document.getElementById('history-tooltip');
+  container.innerHTML = rows.map((r, i) => {
+    const pct = r.five_hour_pct || 0;
+    const colorClass = getBarClass(pct);
+    const height = Math.max(pct, 4);
+    return `<div class="history-bar-wrap" data-idx="${i}"><div class="${colorClass} rounded-t opacity-80 transition-all w-full" style="height:${height}%"></div></div>`;
+  }).join('');
+
+  const wraps = container.querySelectorAll('.history-bar-wrap');
+  wraps.forEach(el => {
+    const idx = parseInt(el.dataset.idx);
+    const r = rows[idx];
+    el.addEventListener('mouseenter', (e) => {
+      const t = new Date(r.timestamp);
+      const timeStr = t.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', hour12: false });
+      const dateStr = t.toLocaleDateString('en-GB', { day:'2-digit', month:'short' });
+      tooltip.innerHTML = `<div class="tt-time">${dateStr} ${timeStr}</div>
+        <div class="tt-row"><span class="tt-label">Session (5h)</span><span class="tt-val green">${(r.five_hour_pct||0).toFixed(1)}%</span></div>
+        <div class="tt-row"><span class="tt-label">Weekly all</span><span class="tt-val yellow">${(r.seven_day_pct||0).toFixed(1)}%</span></div>
+        <div class="tt-row"><span class="tt-label">Sonnet</span><span class="tt-val purple">${(r.seven_day_sonnet_pct||0).toFixed(1)}%</span></div>`;
+      tooltip.style.display = 'block';
+    });
+    el.addEventListener('mousemove', (e) => {
+      tooltip.style.left = Math.min(e.clientX + 12, window.innerWidth - 180) + 'px';
+      tooltip.style.top = Math.max(e.clientY - 90, 8) + 'px';
+    });
+    el.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+  });
+}
+
+function renderStatus(s) {
+  if (!s) return;
+  const banner = document.getElementById('status-banner');
+  const dot = document.getElementById('status-dot');
+  const text = document.getElementById('status-text');
+  const incident = document.getElementById('status-incident');
+
+  const cls = s.indicator === 'none' ? 'operational' : s.indicator;
+  dot.className = 'status-dot ' + cls;
+  text.textContent = s.description || 'All Systems Operational';
+
+  const compsEl = banner.querySelector('.status-components');
+  compsEl.innerHTML = (s.components || []).map(c => {
+    const shortName = c.name
+      .replace('Claude API (api.anthropic.com)', 'API')
+      .replace('platform.claude.com', 'Console');
+    const dotCls = c.status.replace(/ /g, '_');
+    return `<span class="comp-pill"><span class="comp-dot ${dotCls}"></span>${shortName}</span>`;
+  }).join('');
+
+  if (s.incidents && s.incidents.length > 0) {
+    incident.style.display = 'block';
+    incident.textContent = '\u26a0 ' + s.incidents[0].name;
+  } else {
+    incident.style.display = 'none';
+  }
+}
+
+async function loadData() {
+  try {
+    const res = await fetch('/api/usage');
+    const json = await res.json();
+
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('error-state').classList.add('hidden');
+    document.getElementById('main-content').classList.remove('hidden');
+
+    if (!json.ok || !json.data) {
+      showError('No data available yet. Waiting for first fetch...');
+      return;
+    }
+
+    const d = json.data;
+    const now = new Date();
+
+    // Render Claude status banner
+    renderStatus(json.claude_status);
+
+    // Last updated
+    document.getElementById('last-updated').textContent = now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', hour12: false });
+
+    // Next scrape countdown
+    document.getElementById('next-scrape').textContent = formatNextScrape(json.next_fetch_at);
+
+    // Session (5h window)
+    const sessionPct = d.five_hour_pct;
+    updateBar('session-bar', 'session-pct-text', sessionPct);
+    // Override session text color for orange primary bar
+    if (sessionPct !== null) {
+      const sessionBar = document.getElementById('session-bar');
+      sessionBar.className = 'h-full transition-all duration-700 ' + getBarClass(sessionPct);
+    }
+    const sessionCountdown = formatCountdown(d.five_hour_resets_at);
+    const sessionTimeVal = sessionCountdown.replace(/^in /, '');
+    document.getElementById('session-resets').innerHTML = `Resets in <span class="badge-time">${sessionTimeVal}</span>`;
+    document.getElementById('session-badge').textContent = sessionPct !== null ? `${sessionPct.toFixed(1)}% used` : '—% used';
+
+    const sessionResetAbs = formatAbsTime(d.five_hour_resets_at);
+    document.getElementById('session-reset-abs').textContent = sessionResetAbs;
+
+    // Weekly
+    const weeklyPct = d.seven_day_pct;
+    const weeklyBar = document.getElementById('weekly-bar');
+    const weeklyPctText = document.getElementById('weekly-pct-text');
+    const clampedWeekly = Math.min(Math.max(weeklyPct || 0, 0), 100);
+    weeklyBar.style.width = clampedWeekly + '%';
+    weeklyBar.className = 'h-full transition-all duration-700 ' + getBarClass(clampedWeekly);
+    weeklyPctText.textContent = weeklyPct !== null ? `${weeklyPct.toFixed(1)}% utilized` : '—';
+    weeklyPctText.className = 'text-xs font-mono ' + getTextClass(clampedWeekly);
+
+    const weeklyResetDate = d.seven_day_resets_at ? new Date(d.seven_day_resets_at).toLocaleDateString([], { weekday:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+    document.getElementById('weekly-resets').innerHTML = `Resets <span class="badge-time">${weeklyResetDate}</span>`;
+    document.getElementById('weekly-badge').textContent = weeklyPct !== null ? `${weeklyPct.toFixed(1)}% used` : '—% used';
+    document.getElementById('weekly-reset-abs').textContent = formatAbsTime(d.seven_day_resets_at);
+
+    // Sonnet
+    const sonnetPct = d.seven_day_sonnet_pct;
+    const sonnetBar = document.getElementById('sonnet-bar');
+    const clampedSonnet = Math.min(Math.max(sonnetPct || 0, 0), 100);
+    sonnetBar.style.width = clampedSonnet + '%';
+    document.getElementById('sonnet-pct-text').textContent = sonnetPct !== null ? `${sonnetPct.toFixed(1)}% utilized` : '—% utilized';
+    document.getElementById('sonnet-badge').textContent = sonnetPct !== null ? `${sonnetPct.toFixed(1)}% used` : '—% used';
+
+    // Status text
+    const sessionStatusEl = document.getElementById('session-status-text');
+    const sessionIcon = sessionStatusEl.previousElementSibling;
+    if (sessionPct !== null) {
+      if (sessionPct < 60) {
+        sessionStatusEl.innerHTML = `Session at <span class="text-green font-bold">${sessionPct.toFixed(1)}%</span> — healthy`;
+        sessionIcon.textContent = 'check_circle';
+        sessionIcon.className = 'material-symbols-outlined text-tertiary text-xs mt-0.5';
+      } else if (sessionPct < 80) {
+        sessionStatusEl.innerHTML = `Session at <span class="text-yellow font-bold">${sessionPct.toFixed(1)}%</span> — watch it`;
+        sessionIcon.textContent = 'warning';
+        sessionIcon.className = 'material-symbols-outlined text-[#facc15] text-xs mt-0.5';
+      } else {
+        sessionStatusEl.innerHTML = `Session at <span class="text-red font-bold">${sessionPct.toFixed(1)}%</span> — critical!`;
+        sessionIcon.textContent = 'error';
+        sessionIcon.className = 'material-symbols-outlined text-red text-xs mt-0.5';
+      }
+    }
+
+    const weeklyStatusEl = document.getElementById('weekly-status-text');
+    const weeklyIcon = weeklyStatusEl.previousElementSibling;
+    if (weeklyPct !== null) {
+      if (weeklyPct < 60) {
+        weeklyStatusEl.innerHTML = `Weekly at <span class="text-green font-bold">${weeklyPct.toFixed(1)}%</span> — on track`;
+        weeklyIcon.textContent = 'check_circle';
+        weeklyIcon.className = 'material-symbols-outlined text-tertiary text-xs mt-0.5';
+      } else if (weeklyPct < 80) {
+        weeklyStatusEl.innerHTML = `Weekly at <span class="text-yellow font-bold">${weeklyPct.toFixed(1)}%</span> — pace it`;
+        weeklyIcon.textContent = 'warning';
+        weeklyIcon.className = 'material-symbols-outlined text-[#facc15] text-xs mt-0.5';
+      } else {
+        weeklyStatusEl.innerHTML = `Weekly at <span class="text-red font-bold">${weeklyPct.toFixed(1)}%</span> — critical!`;
+        weeklyIcon.textContent = 'error';
+        weeklyIcon.className = 'material-symbols-outlined text-red text-xs mt-0.5';
+      }
+    }
+
+    // Load history
+    fetchHistory();
+
+  } catch (err) {
+    showError('Network error: ' + err.message);
+  }
+}
+
+async function fetchHistory() {
+  try {
+    const res = await fetch('/api/history');
+    const json = await res.json();
+    renderHistory(json.data);
+  } catch (e) {}
+}
+
+function showError(msg) {
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('error-state').classList.remove('hidden');
+  document.getElementById('main-content').classList.remove('hidden');
+  document.getElementById('error-msg').textContent = msg;
+}
+
+async function manualScrape() {
+  const btn = document.getElementById('refresh-btn');
+  btn.disabled = true;
+  btn.textContent = 'Fetching...';
+  try {
+    const res = await fetch('/api/scrape', { method: 'POST' });
+    await res.json();
+    await loadData();
+  } catch (e) {
+    showError('Fetch failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="material-symbols-outlined text-xs">refresh</span> Refresh now';
+  }
+}
+
+// Init
+loadData();
+// Auto-refresh every 30s
+setInterval(loadData, 30000);
+// Update next-scrape countdown every 10s
+setInterval(async () => {
+  try {
+    const res = await fetch('/api/health');
+    const json = await res.json();
+    document.getElementById('next-scrape').textContent = formatNextScrape(json.next_fetch_at);
+  } catch(e) {}
+}, 10000);
+
+// ─── Theme Switcher ───────────────────────────────────────────────────────────
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.innerHTML = theme === 'retro' ? '🎮 Retro' : '🌙 Default';
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'default';
+  const next = current === 'retro' ? 'default' : 'retro';
+  applyTheme(next);
+  localStorage.setItem('claude-usage-theme', next);
+}
+
+// Load saved theme on startup
+(function() {
+  const saved = localStorage.getItem('claude-usage-theme') || 'default';
+  applyTheme(saved);
+})();
+</script>
+  <div id=history-tooltip class=history-tooltip></div>
+</body>
+</html>

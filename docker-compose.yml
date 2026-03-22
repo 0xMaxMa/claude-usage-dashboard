@@ -1,0 +1,18 @@
+services:
+  claude-usage-dashboard:
+    build: .
+    container_name: claude-usage-dashboard
+    restart: unless-stopped
+    environment:
+      - PORT=13737
+      - SESSION_KEY=${SESSION_KEY}
+      - ORG_ID=${ORG_ID}
+      - SCRAPE_INTERVAL_MIN=${SCRAPE_INTERVAL_MIN:-5}
+    volumes:
+      - ./usage.db:/app/usage.db
+    networks:
+      - caddy_net
+
+networks:
+  caddy_net:
+    external: true
