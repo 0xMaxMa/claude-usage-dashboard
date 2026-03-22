@@ -9,7 +9,7 @@ services:
       - ORG_ID=${ORG_ID}
       - SCRAPE_INTERVAL_MIN=${SCRAPE_INTERVAL_MIN:-5}
     volumes:
-      - ./usage.db:/app/usage.db
+      - ./data:/app/data
     networks:
       - caddy_net
 

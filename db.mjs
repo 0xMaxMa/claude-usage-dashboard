@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const db = new Database(path.join(__dirname, 'usage.db'));
+const db = new Database(path.join(__dirname, 'data', 'usage.db'));
 
 // Init schema
 db.exec(`
