@@ -7,6 +7,7 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
   tailwind.config = {
     darkMode: "class",
@@ -249,7 +250,263 @@
   box-shadow: 2px 2px 0 #1a0e00 !important;
 }
 </style>
+<style id="rpg-theme">
+/* 8-BIT RPG DARK DUNGEON THEME */
 
+[data-theme="rpg"] body {
+  background-color: #0a0a1e !important;
+  background-image: radial-gradient(ellipse at center, #14142e 0%, #0a0a1e 100%) !important;
+  font-family: 'Press Start 2P', monospace !important;
+  image-rendering: pixelated !important;
+}
+
+/* Cards */
+[data-theme="rpg"] .bg-surface-container,
+[data-theme="rpg"] .bg-surface-container-low,
+[data-theme="rpg"] .bg-surface-container-high {
+  background-color: #0D0D1A !important;
+  border: 2px solid #C8A415 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 0 0 4px #050508, 0 0 0 6px #C8A415, 4px 4px 0 #000 !important;
+  padding: 0 !important;
+}
+
+/* Card first child (header area) */
+[data-theme="rpg"] .bg-surface-container > *:first-child,
+[data-theme="rpg"] .bg-surface-container-low > *:first-child {
+  background: #000000 !important;
+  border-bottom: 2px solid #C8A415 !important;
+  padding: 8px 12px !important;
+}
+
+/* Card content area */
+[data-theme="rpg"] .bg-surface-container > *:not(:first-child),
+[data-theme="rpg"] .bg-surface-container-low > *:not(:first-child) {
+  padding: 12px !important;
+}
+
+/* Text */
+[data-theme="rpg"] .text-on-surface {
+  color: #FCFCFC !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 10px !important;
+  line-height: 1.8 !important;
+}
+[data-theme="rpg"] .text-on-surface-variant {
+  color: #A0A0B8 !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+}
+[data-theme="rpg"] h1.text-on-surface {
+  color: #F8B800 !important;
+  font-size: 14px !important;
+  letter-spacing: 2px !important;
+  text-shadow: 2px 2px 0 #000 !important;
+}
+[data-theme="rpg"] header .text-on-surface-variant {
+  color: #A0A0B8 !important;
+  font-size: 8px !important;
+}
+
+/* Progress track */
+[data-theme="rpg"] .bg-surface-container-highest {
+  background: #1A1A2E !important;
+  border: 1px solid #333366 !important;
+  border-radius: 0 !important;
+  height: 14px !important;
+}
+
+/* Progress bars — pixel block style */
+[data-theme="rpg"] .bar-green,
+[data-theme="rpg"] [class*="bg-primary"]:not(button):not(a) {
+  background: repeating-linear-gradient(90deg, #40C040 0px, #40C040 10px, #35A035 10px, #35A035 12px) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 0 6px rgba(64,192,64,0.4) !important;
+}
+[data-theme="rpg"] .bar-yellow,
+[data-theme="rpg"] .bar-orange {
+  background: repeating-linear-gradient(90deg, #0078F8 0px, #0078F8 10px, #0060D0 10px, #0060D0 12px) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 0 6px rgba(0,120,248,0.4) !important;
+}
+[data-theme="rpg"] .bar-red {
+  background: repeating-linear-gradient(90deg, #F83800 0px, #F83800 10px, #D02800 10px, #D02800 12px) !important;
+  border-radius: 0 !important;
+}
+[data-theme="rpg"] .bar-purple,
+[data-theme="rpg"] .bg-secondary {
+  background: repeating-linear-gradient(90deg, #F8B800 0px, #F8B800 10px, #D09800 10px, #D09800 12px) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 0 6px rgba(248,184,0,0.4) !important;
+}
+
+/* Remove rounded corners */
+[data-theme="rpg"] .rounded-full,
+[data-theme="rpg"] .rounded-xl,
+[data-theme="rpg"] .rounded-lg { border-radius: 0 !important; }
+
+/* Badge time — gold pixel style */
+[data-theme="rpg"] .badge-time {
+  background: #000000 !important;
+  color: #F8B800 !important;
+  border: 2px solid #C8A415 !important;
+  border-radius: 0 !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  font-weight: normal !important;
+  padding: 4px 8px !important;
+  box-shadow: 2px 2px 0 #000 !important;
+}
+
+/* Status banner */
+[data-theme="rpg"] .status-banner {
+  background: #0D0D1A !important;
+  border: 2px solid #C8A415 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 0 0 4px #050508, 0 0 0 6px #C8A415 !important;
+}
+[data-theme="rpg"] .comp-pill {
+  background: #000000 !important;
+  border: 1px solid #C8A415 !important;
+  border-radius: 0 !important;
+  color: #A0A0B8 !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 7px !important;
+}
+[data-theme="rpg"] .status-left { color: #40C040 !important; font-family: 'Press Start 2P', monospace !important; font-size: 9px !important; }
+[data-theme="rpg"] .status-description { color: #40C040 !important; font-family: 'Press Start 2P', monospace !important; font-size: 9px !important; }
+
+/* Burn rate */
+[data-theme="rpg"] .burn-label { color: #A0A0B8 !important; font-family: 'Press Start 2P', monospace !important; font-size: 7px !important; }
+[data-theme="rpg"] .burn-val { color: #40C040 !important; font-family: 'Press Start 2P', monospace !important; font-size: 16px !important; text-shadow: 0 0 8px rgba(64,192,64,0.6) !important; }
+[data-theme="rpg"] .pred-label { color: #A0A0B8 !important; font-size: 7px !important; font-family: 'Press Start 2P', monospace !important; }
+[data-theme="rpg"] .pred-val.safe { color: #40C040 !important; }
+[data-theme="rpg"] .pred-val.warn { color: #F83800 !important; }
+
+/* History tooltip */
+[data-theme="rpg"] .history-tooltip {
+  background: #0D0D1A !important;
+  border: 2px solid #C8A415 !important;
+  border-radius: 0 !important;
+  color: #FCFCFC !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 7px !important;
+  box-shadow: 4px 4px 0 #000 !important;
+}
+[data-theme="rpg"] .tt-time { color: #A0A0B8 !important; }
+[data-theme="rpg"] .tt-val.green { color: #40C040 !important; }
+[data-theme="rpg"] .tt-val.yellow { color: #0078F8 !important; }
+[data-theme="rpg"] .tt-val.purple { color: #F8B800 !important; }
+
+/* Dividers */
+[data-theme="rpg"] .divider { border-color: #333366 !important; }
+[data-theme="rpg"] .prediction-row { border-color: #1A1A2E !important; }
+[data-theme="rpg"] .border-outline-variant { border-color: #C8A415 !important; }
+
+/* Header */
+[data-theme="rpg"] header {
+  background: #000000 !important;
+  border-bottom: 2px solid #C8A415 !important;
+}
+
+/* Stat box */
+[data-theme="rpg"] .stat-box {
+  background: #0D0D1A !important;
+  border: 1px solid #C8A415 !important;
+  border-radius: 0 !important;
+}
+[data-theme="rpg"] .stat-label { color: #A0A0B8 !important; font-family: 'Press Start 2P', monospace !important; font-size: 7px !important; }
+[data-theme="rpg"] .stat-value { color: #40C040 !important; font-family: 'Press Start 2P', monospace !important; font-size: 16px !important; text-shadow: 0 0 8px rgba(64,192,64,0.5) !important; }
+
+/* Toggle button */
+[data-theme="rpg"] #theme-toggle {
+  background: #000000 !important;
+  border: 2px solid #C8A415 !important;
+  border-radius: 0 !important;
+  color: #F8B800 !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  box-shadow: 2px 2px 0 #000, 0 0 8px rgba(248,184,0,0.3) !important;
+}
+
+/* Pulse dot */
+[data-theme="rpg"] .pulse-dot { background: #40C040 !important; box-shadow: 0 0 8px rgba(64,192,64,0.8) !important; }
+
+/* Wrapper transparent */
+[data-theme="rpg"] .min-h-screen,
+[data-theme="rpg"] main,
+[data-theme="rpg"] body > div { background: transparent !important; }
+
+/* Metric name/value */
+[data-theme="rpg"] .metric-name { color: #A0A0B8 !important; font-family: 'Press Start 2P', monospace !important; font-size: 7px !important; }
+[data-theme="rpg"] .metric-value { color: #FCFCFC !important; font-family: 'Press Start 2P', monospace !important; }
+
+/* Buttons — readable RPG style */
+[data-theme="rpg"] button:not(#theme-toggle) {
+  background: #1A1A2E !important;
+  border: 2px solid #C8A415 !important;
+  border-radius: 0 !important;
+  color: #F8B800 !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 7px !important;
+  box-shadow: 2px 2px 0 #000 !important;
+  cursor: pointer !important;
+}
+button[data-theme="rpg"]:hover,
+[data-theme="rpg"] button:not(#theme-toggle):hover {
+  background: #252545 !important;
+  color: #FCFCFC !important;
+}
+
+
+/* Fix: html element + all wrappers DARK */
+html[data-theme="rpg"] {
+  background: #0a0a1e !important;
+  background-color: #0a0a1e !important;
+}
+[data-theme="rpg"] .min-h-screen {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Fix: text-primary elements → white in RPG */
+[data-theme="rpg"] [class*="text-primary"] {
+  color: #FCFCFC !important;
+}
+
+/* Fix: bg-primary/10 badges → dark bg, not pixel bar */
+[data-theme="rpg"] [class*="bg-primary\/10"],
+[data-theme="rpg"] [class*="bg-primary\/20"] {
+  background: #1A1A2E !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+
+/* Fix: USED badges — dark bg, white text (no pixel bar) */
+[data-theme="rpg"] #session-badge,
+[data-theme="rpg"] #weekly-badge,
+[data-theme="rpg"] #sonnet-badge,
+[data-theme="rpg"] [id$="-badge"] {
+  background: #1A1A2E !important;
+  background-image: none !important;
+  box-shadow: 1px 1px 0 #000 !important;
+  color: #FCFCFC !important;
+  border: 1px solid #C8A415 !important;
+  border-radius: 0 !important;
+}
+
+/* Fix: refresh button bg */
+[data-theme="rpg"] #refresh-btn {
+  background: #1A1A2E !important;
+  background-image: none !important;
+  box-shadow: 2px 2px 0 #000 !important;
+  border: 2px solid #C8A415 !important;
+  color: #F8B800 !important;
+  border-radius: 0 !important;
+}
+
+</style>
 </head>
 <body class="text-on-surface min-h-screen">
 <main class="py-8 px-4 md:px-8 max-w-5xl mx-auto space-y-8">
@@ -729,12 +986,16 @@ setInterval(async () => {
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   const btn = document.getElementById('theme-toggle');
-  if (btn) btn.innerHTML = theme === 'retro' ? '🎮 Retro' : '🌙 Default';
+  if (!btn) return;
+  if (theme === 'retro') btn.innerHTML = '🎮 Retro';
+  else if (theme === 'rpg') btn.innerHTML = '⚔️ RPG';
+  else btn.innerHTML = '🌙 Default';
 }
 
 function toggleTheme() {
+  const themes = ['default', 'retro', 'rpg'];
   const current = document.documentElement.getAttribute('data-theme') || 'default';
-  const next = current === 'retro' ? 'default' : 'retro';
+  const next = themes[(themes.indexOf(current) + 1) % themes.length];
   applyTheme(next);
   localStorage.setItem('claude-usage-theme', next);
 }

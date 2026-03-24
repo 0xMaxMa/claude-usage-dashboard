@@ -26,7 +26,7 @@ logs: ## Show application logs
 	docker compose logs -f claude-usage-dashboard
 
 forward-port: ## Forward local port to the public internet using Cloudflare Tunnel
-	cloudflared tunnel --protocol http2 --url http://localhost:${PORT:-3737}
+	cloudflared tunnel --protocol http2 --url http://localhost:$(PORT)
 
 deploy: ## Deploy application to production server
 	./run-app.sh push 0xparadin/claude-usage-dashboard:latest amd64

@@ -97,6 +97,15 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get('/rpg-preview', (req, res) => {
+  import('fs').then(({readFileSync}) => {
+    let html = readFileSync(new URL('./public/index.html', import.meta.url)).toString();
+    html = html.replace('data-theme="default"', 'data-theme="rpg"');
+    html = html.replace('<head>', '<head><script>localStorage.setItem("claude-usage-theme","rpg");</script>');
+    res.send(html);
+  });
+});
+
 app.listen(CONFIG.PORT, () => {
   console.log(`Claude Usage Dashboard running on http://localhost:${CONFIG.PORT}`);
   startScrapeLoop();
