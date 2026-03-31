@@ -51,6 +51,47 @@ export function getHistory(hours = 24) {
   `).all();
 }
 
+export function getHistoryHourly() {
+  // Generate last 24 hours (hour slots) and LEFT JOIN with actual data
+  // Return exactly 24 rows, one per hour, oldest first
+  const rows = db.prepare(`
+    WITH RECURSIVE hours(h) AS (
+      SELECT 0 UNION ALL SELECT h+1 FROM hours WHERE h < 23
+    ),
+    hour_slots AS (
+      SELECT
+        strftime('%Y-%m-%d %H:00:00', datetime('now', '-' || (23-h) || ' hours')) AS slot_start,
+        strftime('%Y-%m-%d %H:00:00', datetime('now', '-' || (22-h) || ' hours')) AS slot_end,
+        h AS hour_index
+      FROM hours
+    ),
+    aggregated AS (
+      SELECT
+        strftime('%Y-%m-%d %H:00:00', timestamp) AS hour_bucket,
+        ROUND(AVG(five_hour_pct), 1) AS avg_session,
+        ROUND(AVG(seven_day_pct), 1) AS avg_weekly,
+        ROUND(AVG(seven_day_sonnet_pct), 1) AS avg_sonnet,
+        COUNT(*) AS snapshot_count,
+        MIN(five_hour_resets_at) AS session_resets_at
+      FROM snapshots
+      WHERE timestamp >= datetime('now', '-24 hours')
+      GROUP BY hour_bucket
+    )
+    SELECT
+      s.slot_start AS timestamp,
+      s.hour_index,
+      a.avg_session AS five_hour_pct,
+      a.avg_weekly AS seven_day_pct,
+      a.avg_sonnet AS seven_day_sonnet_pct,
+      COALESCE(a.snapshot_count, 0) AS snapshot_count,
+      a.session_resets_at
+    FROM hour_slots s
+    LEFT JOIN aggregated a ON a.hour_bucket = s.slot_start
+    ORDER BY s.hour_index ASC
+  `).all();
+  return rows;
+}
+
 export function getTotalCount() {
   return db.prepare(`SELECT COUNT(*) as cnt FROM snapshots`).get().cnt;
 }

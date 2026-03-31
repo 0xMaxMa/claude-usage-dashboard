@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { CONFIG } from './config.mjs';
 import { fetchUsage, fetchClaudeStatus } from './scraper.mjs';
-import { saveSnapshot, getLatest, getHistory, getTotalCount } from './db.mjs';
+import { saveSnapshot, getLatest, getHistory, getHistoryHourly, getTotalCount } from './db.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -60,8 +60,7 @@ app.get('/api/usage', (req, res) => {
 });
 
 app.get('/api/history', (req, res) => {
-  const hours = parseInt(req.query.hours) || 24;
-  const rows = getHistory(hours);
+  const rows = getHistoryHourly();
   res.json({ ok: true, data: rows });
 });
 

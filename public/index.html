@@ -81,6 +81,7 @@
   .bar-red { background-color: #ef4444; }
   .bar-orange { background-color: #ec4899; }
   .bar-purple { background-color: #cebdff; }
+  .bar-pink { background-color: #f472b6; }
   .text-green { color: #49e095; }
   .text-yellow { color: #facc15; }
   .text-red { color: #ef4444; }
@@ -151,7 +152,7 @@
   .history-tooltip .tt-val.green { color: #49e095; }
   .history-tooltip .tt-val.purple { color: #cebdff; }
   .history-tooltip .tt-val.yellow { color: #facc15; }
-  .history-bar-wrap { position: relative; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; cursor: crosshair; }
+  .history-bar-wrap { position: relative; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; cursor: crosshair; }
 </style>
 <style id="retro-theme">
 /* RETRO PIXEL THEME — only activates with data-theme="retro" */
@@ -506,6 +507,13 @@ html[data-theme="rpg"] {
   border-radius: 0 !important;
 }
 
+
+/* Fix: bar-pink in RPG — pixel magenta (NES #FF44AA) */
+[data-theme="rpg"] .bar-pink {
+  background: repeating-linear-gradient(90deg, #FF44AA 0px, #FF44AA 10px, #CC2288 10px, #CC2288 12px) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 0 8px rgba(255,68,170,0.6) !important;
+}
 </style>
 </head>
 <body class="text-on-surface min-h-screen">
@@ -684,7 +692,7 @@ html[data-theme="rpg"] {
         </div>
         <span class="text-[10px] text-on-surface-variant">Auto-updates every 30s</span>
       </div>
-      <div id="history-bars" class="flex items-end gap-1 h-16">
+      <div id="history-bars" class="flex items-end gap-px h-48">
         <!-- Bars injected by JS -->
       </div>
       <div class="flex justify-between mt-2">
@@ -769,26 +777,57 @@ function renderHistory(rows) {
     container.innerHTML = '<span class="text-[10px] text-on-surface-variant">No history yet</span>';
     return;
   }
+
   const tooltip = document.getElementById('history-tooltip');
   container.innerHTML = rows.map((r, i) => {
-    const pct = r.five_hour_pct || 0;
-    const colorClass = getBarClass(pct);
-    const height = Math.max(pct, 4);
-    return `<div class="history-bar-wrap" data-idx="${i}"><div class="${colorClass} rounded-t opacity-80 transition-all w-full" style="height:${height}%"></div></div>`;
+    const hasData = r.snapshot_count > 0;
+    const sessionPct = r.five_hour_pct || 0;
+    const weeklyPct = r.seven_day_pct || 0;
+    const sonnetPct = r.seven_day_sonnet_pct || 0;
+    // Use actual % directly — max 100%, min 4% if has data
+    const normH = hasData ? Math.max(sessionPct, sessionPct > 0 ? 4 : 0) : 0;
+    // Pink = LAST bar before session reset
+    // Round resets_at to nearest hour, check if it equals slot_end
+    const isResetHour = (() => {
+      if (!r.session_resets_at) return false;
+      const resetT = new Date(r.session_resets_at);
+      // Round to nearest hour (e.g. 05:59:59 → 06:00, 10:00:00.4 → 10:00)
+      const rounded = new Date(Math.round(resetT.getTime() / 3600000) * 3600000);
+      const slotT = new Date(r.timestamp + '+00:00');
+      const slotEnd = new Date(slotT.getTime() + 60 * 60 * 1000);
+      return rounded.getTime() === slotEnd.getTime();
+    })();
+    const colorClass = !hasData ? 'bg-surface-container-highest' : isResetHour ? 'bar-pink' : getBarClass(sessionPct);
+    const opacity = hasData ? 'opacity-90' : 'opacity-0';
+
+    return `<div class="history-bar-wrap" data-idx="${i}" data-reset="${isResetHour}">
+      <div class="${colorClass} ${opacity} rounded-t transition-all w-full" style="height:${normH}%"></div>
+    </div>`;
   }).join('');
+
+  // Restore .history-bar-wrap height to 100% via inline
+  container.querySelectorAll('.history-bar-wrap').forEach(el => {
+    el.style.height = '100%';
+  });
 
   const wraps = container.querySelectorAll('.history-bar-wrap');
   wraps.forEach(el => {
     const idx = parseInt(el.dataset.idx);
     const r = rows[idx];
     el.addEventListener('mouseenter', (e) => {
-      const t = new Date(r.timestamp);
-      const timeStr = t.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', hour12: false });
-      const dateStr = t.toLocaleDateString('en-GB', { day:'2-digit', month:'short' });
-      tooltip.innerHTML = `<div class="tt-time">${dateStr} ${timeStr}</div>
-        <div class="tt-row"><span class="tt-label">Session (5h)</span><span class="tt-val green">${(r.five_hour_pct||0).toFixed(1)}%</span></div>
-        <div class="tt-row"><span class="tt-label">Weekly all</span><span class="tt-val yellow">${(r.seven_day_pct||0).toFixed(1)}%</span></div>
-        <div class="tt-row"><span class="tt-label">Sonnet</span><span class="tt-val purple">${(r.seven_day_sonnet_pct||0).toFixed(1)}%</span></div>`;
+      // Display in UTC+7
+      const t = new Date(r.timestamp + '+00:00');
+      const t7 = new Date(t.getTime() + 7 * 60 * 60 * 1000);
+      const timeStr = t7.toISOString().slice(11, 16);
+      const dateStr = t7.toISOString().slice(5, 10).replace('-', ' ').replace('03', 'Mar').replace('04', 'Apr').replace('01','Jan').replace('02','Feb');
+      const hasData = r.snapshot_count > 0;
+      const resetLabel = el.dataset.reset === 'true' ? ' <span style="color:#f472b6;font-size:9px">(before reset)</span>' : '';
+      tooltip.innerHTML = `<div class="tt-time">${dateStr} ${timeStr}${resetLabel}</div>` + (hasData
+        ? `<div class="tt-row"><span class="tt-label">Session (5h)</span><span class="tt-val green">${(r.five_hour_pct||0).toFixed(1)}%</span></div>
+           <div class="tt-row"><span class="tt-label">Weekly all</span><span class="tt-val yellow">${(r.seven_day_pct||0).toFixed(1)}%</span></div>
+           <div class="tt-row"><span class="tt-label">Sonnet</span><span class="tt-val purple">${(r.seven_day_sonnet_pct||0).toFixed(1)}%</span></div>
+`
+        : `<div class="tt-row"><span class="tt-label" style="color:#888">No data</span></div>`);
       tooltip.style.display = 'block';
     });
     el.addEventListener('mousemove', (e) => {
