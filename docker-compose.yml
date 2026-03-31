@@ -5,9 +5,23 @@ services:
     restart: unless-stopped
     environment:
       - PORT=${PORT:-3737}
-      - SESSION_KEY=${SESSION_KEY}
-      - ORG_ID=${ORG_ID}
       - SCRAPE_INTERVAL_MIN=${SCRAPE_INTERVAL_MIN:-5}
+      # Legacy single-account (backward compat)
+      - SESSION_KEY=${SESSION_KEY:-}
+      - ORG_ID=${ORG_ID:-}
+      # Multi-account
+      - ACCOUNT_1_ID=${ACCOUNT_1_ID:-}
+      - ACCOUNT_1_NAME=${ACCOUNT_1_NAME:-}
+      - ACCOUNT_1_SESSION_KEY=${ACCOUNT_1_SESSION_KEY:-}
+      - ACCOUNT_1_ORG_ID=${ACCOUNT_1_ORG_ID:-}
+      - ACCOUNT_2_ID=${ACCOUNT_2_ID:-}
+      - ACCOUNT_2_NAME=${ACCOUNT_2_NAME:-}
+      - ACCOUNT_2_SESSION_KEY=${ACCOUNT_2_SESSION_KEY:-}
+      - ACCOUNT_2_ORG_ID=${ACCOUNT_2_ORG_ID:-}
+      - ACCOUNT_3_ID=${ACCOUNT_3_ID:-}
+      - ACCOUNT_3_NAME=${ACCOUNT_3_NAME:-}
+      - ACCOUNT_3_SESSION_KEY=${ACCOUNT_3_SESSION_KEY:-}
+      - ACCOUNT_3_ORG_ID=${ACCOUNT_3_ORG_ID:-}
     volumes:
       - ./data:/app/data
     networks:
