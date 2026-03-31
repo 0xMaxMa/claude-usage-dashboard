@@ -1,10 +1,14 @@
 import { CONFIG } from './config.mjs';
 
-export async function fetchUsage() {
-  const url = `https://api.anthropic.com/api/organizations/${CONFIG.ORG_ID}/usage`;
+export async function fetchUsage(sessionKey, orgId) {
+  // Support legacy call with no args (use CONFIG defaults)
+  sessionKey = sessionKey ?? CONFIG.SESSION_KEY;
+  orgId = orgId ?? CONFIG.ORG_ID;
+
+  const url = `https://api.anthropic.com/api/organizations/${orgId}/usage`;
   const res = await fetch(url, {
     headers: {
-      'Cookie': `sessionKey=${CONFIG.SESSION_KEY}`,
+      'Cookie': `sessionKey=${sessionKey}`,
       'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/122.0 Safari/537.36',
       'Accept': 'application/json',
     },

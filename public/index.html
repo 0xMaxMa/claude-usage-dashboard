@@ -419,6 +419,36 @@
 [data-theme="rpg"] .stat-label { color: #A0A0B8 !important; font-family: 'Press Start 2P', monospace !important; font-size: 7px !important; }
 [data-theme="rpg"] .stat-value { color: #40C040 !important; font-family: 'Press Start 2P', monospace !important; font-size: 16px !important; text-shadow: 0 0 8px rgba(64,192,64,0.5) !important; }
 
+/* Account switcher button */
+[data-theme="rpg"] #account-btn {
+  background: #000000 !important;
+  border: 2px solid #C8A415 !important;
+  border-radius: 0 !important;
+  color: #F8B800 !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  box-shadow: 2px 2px 0 #000, 0 0 8px rgba(248,184,0,0.3) !important;
+}
+[data-theme="rpg"] #account-dropdown {
+  background: #0D0D1A !important;
+  border: 2px solid #C8A415 !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 #000 !important;
+}
+[data-theme="rpg"] .account-option {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 7px !important;
+  color: #F8B800 !important;
+  border-bottom: 1px solid #333366 !important;
+}
+[data-theme="rpg"] .account-option:hover {
+  background: #1A1A2E !important;
+}
+[data-theme="rpg"] .account-option.active {
+  color: #40C040 !important;
+  background: #111128 !important;
+}
+
 /* Toggle button */
 [data-theme="rpg"] #theme-toggle {
   background: #000000 !important;
@@ -531,6 +561,13 @@ html[data-theme="rpg"] {
           <span class="material-symbols-outlined text-xs">refresh</span>
           Refresh now
         </button>
+        <!-- Account Switcher — hidden when only 1 account -->
+        <div id="account-switcher" style="position:relative;display:none;">
+          <button id="account-btn" onclick="toggleAccountDropdown()" style="padding: 4px 12px; border-radius: 6px; border: 1px solid #333; background: #242424; color: #e8e8e8; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+            👤 <span id="account-btn-name">Default</span> ▾
+          </button>
+          <div id="account-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 4px);min-width:140px;background:#1a1a1a;border:1px solid #333;border-radius:6px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.5);overflow:hidden;"></div>
+        </div>
         <button id="theme-toggle" onclick="toggleTheme()" style="padding: 4px 12px; border-radius: 6px; border: 1px solid #333; background: #242424; color: #e8e8e8; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">🌙 Default</button>
       </div>
       <div class="flex flex-col md:items-end">
@@ -868,7 +905,7 @@ function renderStatus(s) {
 
 async function loadData() {
   try {
-    const res = await fetch('/api/usage');
+    const res = await fetch('/api/usage' + getAccountParam());
     const json = await res.json();
 
     document.getElementById('loading').classList.add('hidden');
@@ -978,7 +1015,7 @@ async function loadData() {
 
 async function fetchHistory() {
   try {
-    const res = await fetch('/api/history');
+    const res = await fetch('/api/history' + getAccountParam());
     const json = await res.json();
     renderHistory(json.data);
   } catch (e) {}
@@ -1008,17 +1045,97 @@ async function manualScrape() {
 }
 
 // Init
-loadData();
-// Auto-refresh every 30s
-setInterval(loadData, 30000);
-// Update next-scrape countdown every 10s
-setInterval(async () => {
+(async function init() {
+  // getAccountParam() needs _currentAccountId, init switcher first
+  await initAccountSwitcher();
+  loadData();
+  // Auto-refresh every 30s
+  setInterval(loadData, 30000);
+  // Update next-scrape countdown every 10s
+  setInterval(async () => {
+    try {
+      const res = await fetch('/api/health' + getAccountParam());
+      const json = await res.json();
+      document.getElementById('next-scrape').textContent = formatNextScrape(json.next_fetch_at);
+    } catch(e) {}
+  }, 10000);
+})();
+
+// ─── Account Switcher ─────────────────────────────────────────────────────────
+
+let _accounts = [];
+let _currentAccountId = null;
+
+async function initAccountSwitcher() {
   try {
-    const res = await fetch('/api/health');
-    const json = await res.json();
-    document.getElementById('next-scrape').textContent = formatNextScrape(json.next_fetch_at);
-  } catch(e) {}
-}, 10000);
+    const res = await fetch('/api/accounts');
+    _accounts = await res.json();
+  } catch (e) {
+    _accounts = [{ id: 'default', name: 'Default' }];
+  }
+
+  // Restore from localStorage
+  const saved = localStorage.getItem('claude-usage-account');
+  const match = _accounts.find(a => a.id === saved);
+  _currentAccountId = match ? match.id : (_accounts[0]?.id || 'default');
+  localStorage.setItem('claude-usage-account', _currentAccountId);
+
+  const switcher = document.getElementById('account-switcher');
+  const btnName = document.getElementById('account-btn-name');
+
+  if (_accounts.length <= 1) {
+    // Hide switcher for single account
+    switcher.style.display = 'none';
+  } else {
+    switcher.style.display = 'block';
+    const acc = _accounts.find(a => a.id === _currentAccountId);
+    btnName.textContent = acc ? acc.name : _currentAccountId;
+    renderAccountDropdown();
+  }
+}
+
+function renderAccountDropdown() {
+  const dropdown = document.getElementById('account-dropdown');
+  dropdown.innerHTML = _accounts.map(a => {
+    const active = a.id === _currentAccountId ? ' active' : '';
+    const check = a.id === _currentAccountId ? '✓ ' : '';
+    return `<div class="account-option${active}" onclick="selectAccount('${a.id}')" style="padding:8px 14px;cursor:pointer;font-size:12px;color:#e8e8e8;border-bottom:1px solid #2a2a2a;transition:background 0.15s;"
+      onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background=this.classList.contains('active')?'#1e1e1e':''">
+      ${check}${a.name}</div>`;
+  }).join('');
+}
+
+function toggleAccountDropdown() {
+  const dropdown = document.getElementById('account-dropdown');
+  const isVisible = dropdown.style.display !== 'none';
+  dropdown.style.display = isVisible ? 'none' : 'block';
+  if (!isVisible) renderAccountDropdown();
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('account-switcher')?.contains(e.target)) {
+    const dropdown = document.getElementById('account-dropdown');
+    if (dropdown) dropdown.style.display = 'none';
+  }
+});
+
+async function selectAccount(accountId) {
+  _currentAccountId = accountId;
+  localStorage.setItem('claude-usage-account', accountId);
+
+  const acc = _accounts.find(a => a.id === accountId);
+  document.getElementById('account-btn-name').textContent = acc ? acc.name : accountId;
+  document.getElementById('account-dropdown').style.display = 'none';
+
+  // Re-fetch data for selected account
+  await loadData();
+}
+
+function getAccountParam() {
+  if (!_currentAccountId || _currentAccountId === 'default') return '';
+  return `?account=${encodeURIComponent(_currentAccountId)}`;
+}
 
 // ─── Theme Switcher ───────────────────────────────────────────────────────────
 
