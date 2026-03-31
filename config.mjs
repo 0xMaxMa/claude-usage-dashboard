@@ -33,8 +33,9 @@ function parseAccounts() {
     const orgId = process.env[`ACCOUNT_${i}_ORG_ID`];
     if (!name && !sessionKey && !orgId) break;
     if (sessionKey || orgId) {
+      const explicitId = process.env[`ACCOUNT_${i}_ID`];
       accounts.push({
-        id: slugify(name || `account-${i}`),
+        id: explicitId ? explicitId.trim() : slugify(name || `account-${i}`),
         name: name || `Account ${i}`,
         sessionKey: sessionKey || '',
         orgId: orgId || '',

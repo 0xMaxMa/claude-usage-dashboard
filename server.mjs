@@ -85,6 +85,19 @@ app.get('/api/accounts', (req, res) => {
   res.json(CONFIG.ACCOUNTS.map(a => ({ id: a.id, name: a.name })));
 });
 
+app.get('/api/accounts-summary', (req, res) => {
+  const summary = CONFIG.ACCOUNTS.map(acc => {
+    const latest = getLatest(acc.id);
+    return {
+      id: acc.id,
+      name: acc.name,
+      session_pct: latest ? (latest.five_hour_pct ?? null) : null,
+      session_resets_at: latest ? (latest.five_hour_resets_at ?? null) : null,
+    };
+  });
+  res.json(summary);
+});
+
 app.get('/api/usage', (req, res) => {
   const accountId = getAccountId(req);
   const latest = getLatest(accountId);
