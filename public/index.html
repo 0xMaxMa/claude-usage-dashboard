@@ -153,6 +153,77 @@
   .history-tooltip .tt-val.purple { color: #cebdff; }
   .history-tooltip .tt-val.yellow { color: #facc15; }
   .history-bar-wrap { position: relative; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; cursor: crosshair; }
+
+  /* Account Overview Bar */
+  .account-overview-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .account-mini-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #201f1f;
+    border: 1px solid #353534;
+    cursor: pointer;
+    transition: filter 0.2s, transform 0.15s, border-color 0.2s;
+    min-width: 90px;
+    flex: 1;
+    max-width: 130px;
+    user-select: none;
+  }
+  .account-mini-card:hover {
+    filter: brightness(1.15);
+    transform: scale(1.03);
+  }
+  .account-mini-card.active {
+    border-color: #f97316;
+    box-shadow: 0 0 0 1px #f97316, 0 0 10px rgba(249,115,22,0.2);
+  }
+  .account-mini-card .mini-donut-wrap {
+    position: relative;
+    width: 64px;
+    height: 64px;
+  }
+  .account-mini-card .mini-donut-wrap svg {
+    width: 64px;
+    height: 64px;
+  }
+  .account-mini-card .mini-donut-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    font-weight: 700;
+    color: #e5e2e1;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .account-mini-card .mini-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: #e5e2e1;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .account-mini-card .mini-type-label {
+    font-size: 9px;
+    color: #a78b7d;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .account-mini-card .mini-reset {
+    font-size: 9px;
+    color: #a78b7d;
+  }
 </style>
 <style id="retro-theme">
 /* RETRO PIXEL THEME — only activates with data-theme="retro" */
@@ -241,6 +312,39 @@
 [data-theme="retro"] .border-outline-variant { border-color: #2a1500 !important; }
 [data-theme="retro"] .divider { border-color: #c4a882 !important; }
 [data-theme="retro"] .prediction-row { border-color: #d4b896 !important; }
+
+/* Chart bars */
+[data-theme="retro"] .bar-orange {
+  background-color: #e85d04 !important;
+  border-radius: 0 !important;
+}
+[data-theme="retro"] .bar-purple {
+  background-color: #7c3aed !important;
+  border-radius: 0 !important;
+}
+[data-theme="retro"] .bar-teal {
+  background-color: #0f766e !important;
+  border-radius: 0 !important;
+}
+[data-theme="retro"] .bar-pink {
+  background-color: #be185d !important;
+  border-radius: 0 !important;
+}
+[data-theme="retro"] .bg-surface-container-highest {
+  background-color: #d4b896 !important;
+}
+
+/* History chart container */
+[data-theme="retro"] #history-chart-section,
+[data-theme="retro"] .history-chart-wrap {
+  background: #f0dfc0 !important;
+  border: 1px solid #c8a97a !important;
+}
+
+/* X-axis time labels */
+[data-theme="retro"] .chart-time-label {
+  color: #7a5c2e !important;
+}
 
 /* Theme toggle button */
 [data-theme="retro"] #theme-toggle {
@@ -419,6 +523,7 @@
 [data-theme="rpg"] .stat-label { color: #A0A0B8 !important; font-family: 'Press Start 2P', monospace !important; font-size: 7px !important; }
 [data-theme="rpg"] .stat-value { color: #40C040 !important; font-family: 'Press Start 2P', monospace !important; font-size: 16px !important; text-shadow: 0 0 8px rgba(64,192,64,0.5) !important; }
 
+
 /* Toggle button */
 [data-theme="rpg"] #theme-toggle {
   background: #000000 !important;
@@ -514,6 +619,60 @@ html[data-theme="rpg"] {
   border-radius: 0 !important;
   box-shadow: 0 0 8px rgba(255,68,170,0.6) !important;
 }
+
+/* Retro overrides for account overview bar */
+[data-theme="retro"] .account-mini-card {
+  background: #f5e6c8 !important;
+  border: 1px solid #c8a97a !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+[data-theme="retro"] .account-mini-card.active {
+  border-color: #f97316 !important;
+  box-shadow: 0 0 0 2px #f97316, 0 0 10px rgba(249,115,22,0.25) !important;
+}
+[data-theme="retro"] .account-mini-card .mini-name {
+  color: #3b2200 !important;
+  font-weight: 800 !important;
+}
+[data-theme="retro"] .account-mini-card .mini-type-label,
+[data-theme="retro"] .account-mini-card .mini-reset {
+  color: #7a5c2e !important;
+}
+[data-theme="retro"] .account-mini-card .mini-donut-label {
+  color: #3b2200 !important;
+}
+[data-theme="retro"] .account-overview-bar {
+  background: transparent !important;
+}
+
+/* RPG overrides for account overview bar */
+[data-theme="rpg"] .account-mini-card {
+  background: #0D0D1A !important;
+  border: 2px solid #C8A415 !important;
+  border-radius: 0 !important;
+  box-shadow: 2px 2px 0 #000 !important;
+}
+[data-theme="rpg"] .account-mini-card.active {
+  border-color: #F8B800 !important;
+  box-shadow: 0 0 0 2px #C8A415, 2px 2px 0 #000, 0 0 12px rgba(248,184,0,0.4) !important;
+}
+[data-theme="rpg"] .account-mini-card .mini-name {
+  color: #FCFCFC !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 7px !important;
+}
+[data-theme="rpg"] .account-mini-card .mini-type-label,
+[data-theme="rpg"] .account-mini-card .mini-reset {
+  color: #A0A0B8 !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 6px !important;
+}
+[data-theme="rpg"] .account-mini-card .mini-donut-label {
+  color: #FCFCFC !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+}
 </style>
 </head>
 <body class="text-on-surface min-h-screen">
@@ -531,6 +690,7 @@ html[data-theme="rpg"] {
           <span class="material-symbols-outlined text-xs">refresh</span>
           Refresh now
         </button>
+
         <button id="theme-toggle" onclick="toggleTheme()" style="padding: 4px 12px; border-radius: 6px; border: 1px solid #333; background: #242424; color: #e8e8e8; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">🌙 Default</button>
       </div>
       <div class="flex flex-col md:items-end">
@@ -554,6 +714,9 @@ html[data-theme="rpg"] {
     <div class="status-components"></div>
     <div class="status-incident" id="status-incident" style="display:none"></div>
   </div>
+
+  <!-- Account Overview Bar (hidden when ≤1 account) -->
+  <div id="account-overview-bar" class="account-overview-bar" style="display:none;"></div>
 
   <!-- Loading state -->
   <div id="loading" class="flex items-center justify-center py-16">
@@ -868,7 +1031,7 @@ function renderStatus(s) {
 
 async function loadData() {
   try {
-    const res = await fetch('/api/usage');
+    const res = await fetch('/api/usage' + getAccountParam());
     const json = await res.json();
 
     document.getElementById('loading').classList.add('hidden');
@@ -978,7 +1141,7 @@ async function loadData() {
 
 async function fetchHistory() {
   try {
-    const res = await fetch('/api/history');
+    const res = await fetch('/api/history' + getAccountParam());
     const json = await res.json();
     renderHistory(json.data);
   } catch (e) {}
@@ -1007,18 +1170,180 @@ async function manualScrape() {
   }
 }
 
-// Init
-loadData();
-// Auto-refresh every 30s
-setInterval(loadData, 30000);
-// Update next-scrape countdown every 10s
-setInterval(async () => {
+// ─── Account Overview Bar ─────────────────────────────────────────────────────
+
+function formatResetCountdown(isoStr) {
+  if (!isoStr) return '—';
+  const diff = new Date(isoStr) - new Date();
+  if (diff <= 0) return 'now';
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+function buildDonutSvg(pct) {
+  const r = 26;
+  const cx = 32, cy = 32;
+  const circumference = 2 * Math.PI * r;
+  const clampedPct = Math.min(Math.max(pct ?? 0, 0), 100);
+  const arcLen = (clampedPct / 100) * circumference;
+  const offset = circumference - arcLen;
+  const theme = document.documentElement.dataset.theme || 'default';
+
+  // Color based on percentage
+  let color = '#49e095'; // green
+  if (clampedPct >= 80) color = '#ef4444'; // red
+  else if (clampedPct >= 60) color = '#facc15'; // yellow
+
+  if (theme === 'rpg') {
+    // RPG: pixel gold color, square linecap, dashed segments only within active arc
+    const rpgColor = clampedPct >= 80 ? '#F83800' : clampedPct >= 60 ? '#F8B800' : '#40C040';
+    const trackColor = '#1A1A2E';
+    // Dash: 5px on, 3px off — clamp total to arcLen so dashes don't overflow into empty track
+    const dashOn = 5, dashOff = 3, dashUnit = dashOn + dashOff;
+    const dashArray = `${dashOn} ${dashOff}`;
+    // strokeDashoffset trick: offset full circumference minus arcLen to start at top,
+    // then clip overflow by setting dasharray total = arcLen (pad remainder with 0-length gaps)
+    const activeDash = `${dashOn} ${dashOff}`;
+    // We render two circles: track + a clipped active arc using a second circle with dasharray = arcLen 0 restOfCircumference
+    const activeDashArray = `${arcLen} ${circumference - arcLen}`;
+    // But we want the active portion to be dashed, not solid. Use a pattern:
+    // repeating dash within arcLen: dashOn dashOff ... then gap for remainder
+    // Build explicit dash sequence that sums to arcLen then rest is gap
+    let dashSegs = [];
+    let remaining = arcLen;
+    while (remaining > 0) {
+      const on = Math.min(dashOn, remaining);
+      dashSegs.push(on);
+      remaining -= on;
+      if (remaining <= 0) { dashSegs.push(circumference); break; }
+      const off = Math.min(dashOff, remaining);
+      dashSegs.push(off);
+      remaining -= off;
+    }
+    const rpgDashArray = dashSegs.join(' ');
+    return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${trackColor}" stroke-width="7"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${rpgColor}" stroke-width="7"
+        stroke-dasharray="${rpgDashArray}"
+        stroke-linecap="butt"
+        transform="rotate(-90 ${cx} ${cy})"/>
+    </svg>`;
+  }
+
+  if (theme === 'retro') {
+    // Retro: square linecap, warm brown track
+    const trackColor = '#d4b896';
+    return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${trackColor}" stroke-width="6"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="6"
+        stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+        stroke-linecap="butt"
+        transform="rotate(-90 ${cx} ${cy})"/>
+    </svg>`;
+  }
+
+  // Default dark theme
+  const trackColor = '#353534';
+  return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${trackColor}" stroke-width="6"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="6"
+      stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+      stroke-linecap="round"
+      transform="rotate(-90 ${cx} ${cy})"/>
+  </svg>`;
+}
+
+async function loadAccountsSummary() {
   try {
-    const res = await fetch('/api/health');
-    const json = await res.json();
-    document.getElementById('next-scrape').textContent = formatNextScrape(json.next_fetch_at);
-  } catch(e) {}
-}, 10000);
+    const res = await fetch('/api/accounts-summary');
+    const accounts = await res.json();
+    renderAccountOverviewBar(accounts);
+  } catch (e) {}
+}
+
+function renderAccountOverviewBar(accounts) {
+  const bar = document.getElementById('account-overview-bar');
+  if (!bar) return;
+
+  if (!accounts || accounts.length <= 1) {
+    bar.style.display = 'none';
+    return;
+  }
+
+  bar.style.display = 'flex';
+  bar.innerHTML = accounts.map(acc => {
+    const isActive = acc.id === _currentAccountId;
+    const pctLabel = acc.session_pct !== null ? `${acc.session_pct.toFixed(0)}%` : '—';
+    const resetLabel = acc.session_pct !== null ? `Resets in ${formatResetCountdown(acc.session_resets_at)}` : '—';
+    const donutSvg = buildDonutSvg(acc.session_pct);
+    return `<div class="account-mini-card${isActive ? ' active' : ''}" onclick="selectAccount('${acc.id}')">
+      <div class="mini-donut-wrap">
+        ${donutSvg}
+        <div class="mini-donut-label">${pctLabel}</div>
+      </div>
+      <div class="mini-name">${acc.name}</div>
+      <div class="mini-type-label">5H SESSION</div>
+      <div class="mini-reset">${resetLabel}</div>
+    </div>`;
+  }).join('');
+}
+
+// Init
+(async function init() {
+  // getAccountParam() needs _currentAccountId, init switcher first
+  await initAccountSwitcher();
+  loadData();
+  loadAccountsSummary();
+  // Auto-refresh every 30s
+  setInterval(loadData, 30000);
+  setInterval(loadAccountsSummary, 30000);
+  // Update next-scrape countdown every 10s
+  setInterval(async () => {
+    try {
+      const res = await fetch('/api/health' + getAccountParam());
+      const json = await res.json();
+      document.getElementById('next-scrape').textContent = formatNextScrape(json.next_fetch_at);
+    } catch(e) {}
+  }, 10000);
+})();
+
+// ─── Account Switcher ─────────────────────────────────────────────────────────
+
+let _accounts = [];
+let _currentAccountId = null;
+
+async function initAccountSwitcher() {
+  try {
+    const res = await fetch('/api/accounts');
+    _accounts = await res.json();
+  } catch (e) {
+    _accounts = [{ id: 'default', name: 'Default' }];
+  }
+
+  // Restore from localStorage
+  const saved = localStorage.getItem('claude-usage-account');
+  const match = _accounts.find(a => a.id === saved);
+  _currentAccountId = match ? match.id : (_accounts[0]?.id || 'default');
+  localStorage.setItem('claude-usage-account', _currentAccountId);
+
+}
+
+async function selectAccount(accountId) {
+  _currentAccountId = accountId;
+  localStorage.setItem('claude-usage-account', accountId);
+
+  // Re-fetch data for selected account
+  await loadData();
+  // Refresh overview bar to update active highlight
+  await loadAccountsSummary();
+}
+
+function getAccountParam() {
+  if (!_currentAccountId || _currentAccountId === 'default') return '';
+  return `?account=${encodeURIComponent(_currentAccountId)}`;
+}
 
 // ─── Theme Switcher ───────────────────────────────────────────────────────────
 
@@ -1029,6 +1354,8 @@ function applyTheme(theme) {
   if (theme === 'retro') btn.innerHTML = '🎮 Retro';
   else if (theme === 'rpg') btn.innerHTML = '⚔️ RPG';
   else btn.innerHTML = '🌙 Default';
+  // Re-render overview bar so donuts pick up new theme
+  loadAccountsSummary().catch(() => {});
 }
 
 function toggleTheme() {

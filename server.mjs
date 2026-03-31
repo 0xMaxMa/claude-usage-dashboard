@@ -15,20 +15,56 @@ let nextFetchAt = null;
 let latestClaudeStatus = null;
 let scrapeIntervalHandle = null;
 
+// Per-account scrape state
+const accountState = {};
+for (const acc of CONFIG.ACCOUNTS) {
+  accountState[acc.id] = { lastFetchedAt: null, nextFetchAt: null };
+}
+
+function getAccountId(req) {
+  const qid = req.query.account;
+  if (qid && CONFIG.ACCOUNTS.find(a => a.id === qid)) return qid;
+  return CONFIG.ACCOUNTS[0]?.id || 'default';
+}
+
+async function doScrapeAccount(account) {
+  const data = await fetchUsage(account.sessionKey, account.orgId);
+  saveSnapshot(data, account.id);
+  const now = new Date().toISOString();
+  const intervalMs = CONFIG.SCRAPE_INTERVAL_MIN * 60 * 1000;
+  accountState[account.id].lastFetchedAt = now;
+  accountState[account.id].nextFetchAt = new Date(Date.now() + intervalMs).toISOString();
+  console.log(`[${now}] [${account.name}] Fetched: session=${data.session_pct}% weekly=${data.weekly_pct}% sonnet=${data.sonnet_pct}%`);
+  return data;
+}
+
 async function doScrape() {
   try {
-    const [dataResult, claudeStatusResult] = await Promise.allSettled([fetchUsage(), fetchClaudeStatus()]);
-    if (dataResult.status === 'rejected') throw dataResult.reason;
-    const data = dataResult.value;
+    // Scrape all accounts in parallel + claude status
+    const [claudeStatusResult, ...accountResults] = await Promise.allSettled([
+      fetchClaudeStatus(),
+      ...CONFIG.ACCOUNTS.map(acc => doScrapeAccount(acc)),
+    ]);
+
     if (claudeStatusResult.status === 'fulfilled' && claudeStatusResult.value) {
       latestClaudeStatus = claudeStatusResult.value;
     }
-    saveSnapshot(data);
-    lastFetchedAt = new Date().toISOString();
-    const intervalMs = CONFIG.SCRAPE_INTERVAL_MIN * 60 * 1000;
-    nextFetchAt = new Date(Date.now() + intervalMs).toISOString();
-    console.log(`[${lastFetchedAt}] Fetched: session=${data.session_pct}% weekly=${data.weekly_pct}% sonnet=${data.sonnet_pct}%`);
-    return data;
+
+    // Update legacy fields from first account
+    const firstResult = accountResults[0];
+    if (firstResult?.status === 'fulfilled') {
+      lastFetchedAt = accountState[CONFIG.ACCOUNTS[0].id].lastFetchedAt;
+      nextFetchAt = accountState[CONFIG.ACCOUNTS[0].id].nextFetchAt;
+    }
+
+    // Log errors per account
+    accountResults.forEach((r, i) => {
+      if (r.status === 'rejected') {
+        console.error(`Scrape failed for [${CONFIG.ACCOUNTS[i].name}]:`, r.reason?.message);
+      }
+    });
+
+    return firstResult?.value;
   } catch (err) {
     console.error('Scrape failed:', err.message);
     throw err;
@@ -44,38 +80,62 @@ function startScrapeLoop() {
 }
 
 // Routes
+
+app.get('/api/accounts', (req, res) => {
+  res.json(CONFIG.ACCOUNTS.map(a => ({ id: a.id, name: a.name })));
+});
+
+app.get('/api/accounts-summary', (req, res) => {
+  const summary = CONFIG.ACCOUNTS.map(acc => {
+    const latest = getLatest(acc.id);
+    return {
+      id: acc.id,
+      name: acc.name,
+      session_pct: latest ? (latest.five_hour_pct ?? null) : null,
+      session_resets_at: latest ? (latest.five_hour_resets_at ?? null) : null,
+    };
+  });
+  res.json(summary);
+});
+
 app.get('/api/usage', (req, res) => {
-  const latest = getLatest();
+  const accountId = getAccountId(req);
+  const latest = getLatest(accountId);
   if (!latest) return res.json({ ok: false, data: null });
+  const state = accountState[accountId] || {};
   res.json({
     ok: true,
     data: {
       ...latest,
       raw: latest.raw_json ? JSON.parse(latest.raw_json) : null,
     },
-    last_fetched_at: lastFetchedAt,
-    next_fetch_at: nextFetchAt,
+    last_fetched_at: state.lastFetchedAt || lastFetchedAt,
+    next_fetch_at: state.nextFetchAt || nextFetchAt,
     claude_status: latestClaudeStatus,
+    account_id: accountId,
   });
 });
 
 app.get('/api/history', (req, res) => {
-  const rows = getHistoryHourly();
-  res.json({ ok: true, data: rows });
+  const accountId = getAccountId(req);
+  const rows = getHistoryHourly(accountId);
+  res.json({ ok: true, data: rows, account_id: accountId });
 });
 
 app.post('/api/scrape', async (req, res) => {
   try {
-    const data = await doScrape();
-    const latest = getLatest();
+    await doScrape();
+    const accountId = getAccountId(req);
+    const latest = getLatest(accountId);
+    const state = accountState[accountId] || {};
     res.json({
       ok: true,
       data: {
         ...latest,
-        raw: latest.raw_json ? JSON.parse(latest.raw_json) : null,
+        raw: latest?.raw_json ? JSON.parse(latest.raw_json) : null,
       },
-      last_fetched_at: lastFetchedAt,
-      next_fetch_at: nextFetchAt,
+      last_fetched_at: state.lastFetchedAt || lastFetchedAt,
+      next_fetch_at: state.nextFetchAt || nextFetchAt,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -83,12 +143,15 @@ app.post('/api/scrape', async (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
+  const accountId = getAccountId(req);
+  const state = accountState[accountId] || {};
   res.json({
     ok: true,
-    last_fetched_at: lastFetchedAt,
-    next_fetch_at: nextFetchAt,
-    total_snapshots: getTotalCount(),
+    last_fetched_at: state.lastFetchedAt || lastFetchedAt,
+    next_fetch_at: state.nextFetchAt || nextFetchAt,
+    total_snapshots: getTotalCount(accountId),
     claude_status: latestClaudeStatus,
+    accounts: CONFIG.ACCOUNTS.map(a => ({ id: a.id, name: a.name })),
   });
 });
 
@@ -107,5 +170,6 @@ app.get('/rpg-preview', (req, res) => {
 
 app.listen(CONFIG.PORT, () => {
   console.log(`Claude Usage Dashboard running on http://localhost:${CONFIG.PORT}`);
+  console.log(`Accounts configured: ${CONFIG.ACCOUNTS.map(a => a.name).join(', ')}`);
   startScrapeLoop();
 });

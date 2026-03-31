@@ -20,15 +20,23 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_snapshots_timestamp ON snapshots(timestamp);
 `);
 
-export function saveSnapshot(data) {
-  // Cleanup old snapshots (>7 days)
-  db.prepare(`DELETE FROM snapshots WHERE timestamp < datetime('now', '-7 days')`).run();
+// Migration: add account_id column if not exists
+const cols = db.prepare("PRAGMA table_info(snapshots)").all().map(c => c.name);
+if (!cols.includes('account_id')) {
+  db.exec(`ALTER TABLE snapshots ADD COLUMN account_id TEXT NOT NULL DEFAULT 'default'`);
+  console.log('[db] Migrated: added account_id column');
+}
+
+export function saveSnapshot(data, accountId = 'default') {
+  // Cleanup old snapshots (>7 days) for this account
+  db.prepare(`DELETE FROM snapshots WHERE timestamp < datetime('now', '-7 days') AND account_id = ?`).run(accountId);
 
   const stmt = db.prepare(`
-    INSERT INTO snapshots (five_hour_pct, seven_day_pct, seven_day_sonnet_pct, five_hour_resets_at, seven_day_resets_at, raw_json)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO snapshots (account_id, five_hour_pct, seven_day_pct, seven_day_sonnet_pct, five_hour_resets_at, seven_day_resets_at, raw_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
   const result = stmt.run(
+    accountId,
     data.session_pct ?? null,
     data.weekly_pct ?? null,
     data.sonnet_pct ?? null,
@@ -39,19 +47,20 @@ export function saveSnapshot(data) {
   return result.lastInsertRowid;
 }
 
-export function getLatest() {
-  return db.prepare(`SELECT * FROM snapshots ORDER BY id DESC LIMIT 1`).get() || null;
+export function getLatest(accountId = 'default') {
+  return db.prepare(`SELECT * FROM snapshots WHERE account_id = ? ORDER BY id DESC LIMIT 1`).get(accountId) || null;
 }
 
-export function getHistory(hours = 24) {
+export function getHistory(hours = 24, accountId = 'default') {
   return db.prepare(`
     SELECT * FROM snapshots
     WHERE timestamp >= datetime('now', '-${hours} hours')
+      AND account_id = ?
     ORDER BY timestamp ASC
-  `).all();
+  `).all(accountId);
 }
 
-export function getHistoryHourly() {
+export function getHistoryHourly(accountId = 'default') {
   // Generate last 24 hours (hour slots) and LEFT JOIN with actual data
   // Return exactly 24 rows, one per hour, oldest first
   const rows = db.prepare(`
@@ -75,6 +84,7 @@ export function getHistoryHourly() {
         MIN(five_hour_resets_at) AS session_resets_at
       FROM snapshots
       WHERE timestamp >= datetime('now', '-24 hours')
+        AND account_id = ?
       GROUP BY hour_bucket
     )
     SELECT
@@ -88,10 +98,10 @@ export function getHistoryHourly() {
     FROM hour_slots s
     LEFT JOIN aggregated a ON a.hour_bucket = s.slot_start
     ORDER BY s.hour_index ASC
-  `).all();
+  `).all(accountId);
   return rows;
 }
 
-export function getTotalCount() {
-  return db.prepare(`SELECT COUNT(*) as cnt FROM snapshots`).get().cnt;
+export function getTotalCount(accountId = 'default') {
+  return db.prepare(`SELECT COUNT(*) as cnt FROM snapshots WHERE account_id = ?`).get(accountId).cnt;
 }
