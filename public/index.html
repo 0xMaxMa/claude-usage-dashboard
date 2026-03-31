@@ -510,7 +510,7 @@
 
 /* Header */
 [data-theme="rpg"] header {
-  background: #000000 !important;
+  background: linear-gradient(180deg, #12122a 0%, #0a0a1e 100%) !important;
   border-bottom: 2px solid #C8A415 !important;
 }
 
@@ -1217,10 +1217,17 @@ function buildDonutSvg(pct) {
       const on = Math.min(dashOn, remaining);
       dashSegs.push(on);
       remaining -= on;
-      if (remaining <= 0) { dashSegs.push(circumference); break; }
+      if (remaining <= 0) break;
       const off = Math.min(dashOff, remaining);
       dashSegs.push(off);
       remaining -= off;
+    }
+    // Prevent dasharray pattern from repeating around the full circle
+    if (dashSegs.length % 2 === 1) {
+      dashSegs.push(circumference);
+    } else {
+      dashSegs.push(0);
+      dashSegs.push(circumference);
     }
     const rpgDashArray = dashSegs.join(' ');
     return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
